@@ -1,0 +1,20 @@
+{
+  "version": "5",
+  "dialect": "pg",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1706540908234,
+      "tag": "0000_military_christian_walker",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1706541411413,
+      "tag": "0001_tranquil_stepford_cuckoos",
+      "breakpoints": true
+    }
+  ]
+}
