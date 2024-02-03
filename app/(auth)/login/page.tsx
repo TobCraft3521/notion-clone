@@ -19,7 +19,7 @@ import * as z from "zod"
 import Logo from "@/public/cypresslogo.svg"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import Loader from "@/components/Loader"
+import Loader from "@/components/global/Loader"
 import { actionLoginUser } from "@/lib/server-action/auth-actions"
 
 const LoginPage = () => {
