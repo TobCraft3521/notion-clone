@@ -7,9 +7,10 @@ import { useEffect, useState } from "react"
 
 interface SelectedWorkspaceProps {
   workspace: workspace
+  onClick?: (option: workspace) => void
 }
 
-const SelectedWorkspace = ({ workspace }: SelectedWorkspaceProps) => {
+const SelectedWorkspace = ({ workspace, onClick }: SelectedWorkspaceProps) => {
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -23,7 +24,14 @@ const SelectedWorkspace = ({ workspace }: SelectedWorkspaceProps) => {
       setWorkspaceLogo(path)
     }
   }, [workspace])
-  return <Link href={"/dashboard/" + workspace.id}></Link>
+  return (
+    <Link
+      href={"/dashboard/" + workspace.id}
+      onClick={() => {
+        if (onClick) onClick(workspace)
+      }}
+    ></Link>
+  )
 }
 
 export default SelectedWorkspace
