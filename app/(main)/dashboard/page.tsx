@@ -1,7 +1,7 @@
 import DashboardSetup from "@/components/dashboard-setup/dashboard-setup"
 import db from "@/lib/supabase/db"
 import { getUserSubscriptionStatus } from "@/lib/supabase/queries"
-import { CookieOptions, createServerClient } from "@supabase/ssr"
+import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 
@@ -33,12 +33,13 @@ const Dashboard = async () => {
     await getUserSubscriptionStatus(user.id)
 
   if (subscriptionError) return
-  if (!workspace)
+  if (!workspace) {
     return (
       <div className="bg-background h-screen w-screen flex justify-center items-center">
         <DashboardSetup user={user} subscription={subscription} />
       </div>
     )
+  }
 
   redirect(`/dashboard/${workspace.id}`)
 }

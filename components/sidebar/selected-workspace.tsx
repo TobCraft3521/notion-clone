@@ -2,6 +2,7 @@
 
 import { workspace } from "@/lib/supabase/supabase.types"
 import { createBrowserClient } from "@supabase/ssr"
+import Image from "next/image"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 
@@ -30,7 +31,21 @@ const SelectedWorkspace = ({ workspace, onClick }: SelectedWorkspaceProps) => {
       onClick={() => {
         if (onClick) onClick(workspace)
       }}
-    ></Link>
+      className="flex rounded-md hover:bg-muted transition-all flex-row p-2 gap-4 justify-center cursor-pointer items-center my-2"
+    >
+      <Image
+        src={workspaceLogo}
+        alt="workspace logo"
+        width={26}
+        height={26}
+        objectFit="cover"
+      />
+      <div className="flex flex-col">
+        <p className="text-lg w-[170px] overflow-hidden overflow-ellipsis whitespace-nowrap">
+          {workspace.title}
+        </p>
+      </div>
+    </Link>
   )
 }
 
