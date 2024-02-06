@@ -10,6 +10,7 @@ import { useSupabaseUser } from "@/lib/providers/supabase-user-provider"
 import { v4 } from "uuid"
 import { createFolder } from "@/lib/supabase/queries"
 import { useToast } from "../ui/use-toast"
+import Dropdown from "./Dropdown"
 
 interface FoldersDropdownListProps {
   workspaceFolders: Folder[]
@@ -20,7 +21,7 @@ const FoldersDropdownList = ({
   workspaceFolders,
   workspaceId,
 }: FoldersDropdownListProps) => {
-  const { state, dispatch } = useAppState()
+  const { state, dispatch, folderId } = useAppState()
   const [folders, setFolders] = useState(workspaceFolders)
   const { subscription } = useSupabaseUser()
   const { toast } = useToast()
@@ -125,10 +126,10 @@ const FoldersDropdownList = ({
       </div>
       <Accordion
         type="multiple"
-        //  defaultValue={[folderId || ""]}
+        defaultValue={[folderId || ""]}
         className="pb-20"
       >
-        {/* {folders
+        {folders
           .filter((folder) => !folder.inTrash)
           .map((folder) => (
             <Dropdown
@@ -138,7 +139,7 @@ const FoldersDropdownList = ({
               id={folder.id}
               iconId={folder.iconId}
             />
-          ))} */}
+          ))}
       </Accordion>
     </>
   )
