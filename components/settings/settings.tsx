@@ -1,5 +1,6 @@
 import React from "react"
 import CustomDialogTrigger from "../global/custom-dialog"
+import SettingsForm from "./settings-form"
 //import SettingsForm from "./settings-form"
 
 interface SettingsProps {
@@ -8,7 +9,7 @@ interface SettingsProps {
 
 const Settings: React.FC<SettingsProps> = ({ children }) => {
   return (
-    <CustomDialogTrigger header="Settings" content={/*<SettingsForm /> */ null}>
+    <CustomDialogTrigger header="Settings" content={<SettingsForm />}>
       {children}
     </CustomDialogTrigger>
   )

@@ -61,7 +61,7 @@ import { createBrowserClient } from "@supabase/ssr"
 const SettingsForm = () => {
   const { toast } = useToast()
   const { user, subscription } = useSupabaseUser()
-  //   const { open, setOpen } = useSubscriptionModal()
+  //const { open, setOpen } = useSubscriptionModal()
   const router = useRouter()
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -92,16 +92,17 @@ const SettingsForm = () => {
   //     }
   //     setLoadingPortal(false)
   //   }
+
   //addcollborators
-  //   const addCollaborator = async (profile: User) => {
-  //     if (!workspaceId) return
-  //     if (subscription?.status !== "active" && collaborators.length >= 2) {
-  //       setOpen(true)
-  //       return
-  //     }
-  //     await addCollaborators([profile], workspaceId)
-  //     setCollaborators([...collaborators, profile])
+  // const addCollaborator = async (profile: User) => {
+  //   if (!workspaceId) return
+  //   if (subscription?.status !== "active" && collaborators.length >= 2) {
+  //     setOpen(true)
+  //     return
   //   }
+  //   await addCollaborators([profile], workspaceId)
+  //   setCollaborators([...collaborators, profile])
+  // }
 
   //remove collaborators
   const removeCollaborator = async (user: User) => {
@@ -125,7 +126,7 @@ const SettingsForm = () => {
     })
     if (titleTimerRef.current) clearTimeout(titleTimerRef.current)
     titleTimerRef.current = setTimeout(async () => {
-      // await updateWorkspace({ title: e.target.value }, workspaceId);
+      await updateWorkspace({ title: e.target.value }, workspaceId)
     }, 500)
   }
 
@@ -273,17 +274,17 @@ const SettingsForm = () => {
 
         {permissions === "shared" && (
           <div>
-            {/* <CollaboratorSearch
+            <CollaboratorSearch
               existingCollaborators={collaborators}
               getCollaborator={(user) => {
-                addCollaborators(user)
+                // addCollaborators(user)
               }}
             >
               <Button type="button" className="text-sm mt-4">
                 <Plus />
                 Add Collaborators
               </Button>
-            </CollaboratorSearch> */}
+            </CollaboratorSearch>
             <div className="mt-4">
               <span className="text-sm text-muted-foreground">
                 Collaborators {collaborators.length || ""}
@@ -403,7 +404,7 @@ const SettingsForm = () => {
               type="file"
               accept="image/*"
               placeholder="Profile Picture"
-              // onChange={onChangeProfilePicture}
+              //   onChange={onChangeProfilePicture}
               disabled={uploadingProfilePic}
             />
           </div>
@@ -428,7 +429,7 @@ const SettingsForm = () => {
         >
           View Plans <ExternalLink size={16} />
         </Link>
-        {/* {subscription?.status === "active" ? (
+        {subscription?.status === "active" ? (
           <div>
             <Button
               type="button"
@@ -436,7 +437,7 @@ const SettingsForm = () => {
               variant={"secondary"}
               disabled={loadingPortal}
               className="text-sm"
-              onClick={redirectToCustomerPortal}
+              //onClick={redirectToCustomerPortal}
             >
               Manage Subscription
             </Button>
@@ -448,12 +449,12 @@ const SettingsForm = () => {
               size="sm"
               variant={"secondary"}
               className="text-sm"
-              onClick={() => setOpen(true)}
+              //  onClick={() => setOpen(true)}
             >
               Start Plan
             </Button>
           </div>
-        )} */}
+        )}
       </>
       <AlertDialog open={openAlertMessage}>
         <AlertDialogContent>

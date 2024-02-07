@@ -105,10 +105,10 @@ body {
   @apply border-none outline-none;
 }
 
-/* .dotPattern {
+.dotPattern {
   background-image: radial-gradient(rgb(25, 25, 25) 1px, transparent 1px);
   background-size: 30px 30px;
-} */
+}
 
 .ql-toolbar::-webkit-scrollbar {
   display: none;

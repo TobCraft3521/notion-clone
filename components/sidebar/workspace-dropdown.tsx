@@ -42,6 +42,14 @@ const WorkspaceDropdown = ({
     setSelectedOption(option)
     setIsOpen(false)
   }
+
+  useEffect(() => {
+    const findSelectedWorkspace = state.workspaces.find(
+      (workspace) => workspace.id === defaultValue?.id
+    )
+    if (findSelectedWorkspace) setSelectedOption(findSelectedWorkspace)
+  }, [state, defaultValue])
+
   return (
     <div
       className=" relative inline-block
@@ -142,7 +150,6 @@ const WorkspaceDropdown = ({
                  justify-center
                  -ml-5
                  "
-                 
                 >
                   +
                 </article>
