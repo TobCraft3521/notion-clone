@@ -26,6 +26,7 @@ import Image from "next/image"
 import EmojiPicker from "../global/emoji-picker"
 import { createBrowserClient } from "@supabase/ssr"
 import BannerUpload from "../banner-upload/banner-upload"
+import { useSocket } from "@/lib/providers/socket-provider"
 
 // export const dynamic = "force-dynamic"
 
@@ -84,6 +85,7 @@ const QuillEditor = ({ fileId, dirDetails, dirType }: QuillEditorProps) => {
   ])
   const [saving, setSaving] = useState(false)
   const [deletingBanner, setDeletingBanner] = useState(false)
+  const { socket } = useSocket()
 
   const details = useMemo(() => {
     let selectedDir
