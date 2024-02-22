@@ -78,9 +78,11 @@ export const files = pgTable("files", {
   workspaceId: uuid("workspace_id")
     .notNull()
     .references(() => workspaces.id, { onDelete: "cascade" }),
-  folderId: uuid("folder_id").references(() => folders.id, {
-    onDelete: "cascade",
-  }),
+  folderId: uuid("folder_id")
+    .notNull()
+    .references(() => folders.id, {
+      onDelete: "cascade",
+    }),
 })
 
 export const folders = pgTable("folders", {
