@@ -1,4 +1,7 @@
 "use client"
+import { useSupabaseUser } from "@/lib/providers/supabase-user-provider"
+import { User } from "@/lib/supabase/supabase.types"
+import React, { useEffect, useRef, useState } from "react"
 import {
   Sheet,
   SheetContent,
@@ -7,15 +10,12 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
-import { useSupabaseUser } from "@/lib/providers/supabase-user-provider"
-import { User } from "@/lib/supabase/supabase.types"
+import { Label } from "../ui/label"
 import { Search } from "lucide-react"
-import React, { useEffect, useRef, useState } from "react"
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar"
-import { Button } from "../ui/button"
 import { Input } from "../ui/input"
 import { ScrollArea } from "../ui/scroll-area"
-import { createBrowserClient } from "@supabase/ssr"
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar"
+import { Button } from "../ui/button"
 import { getUsersFromSearch } from "@/lib/supabase/queries"
 
 interface CollaboratorSearchProps {
@@ -30,17 +30,7 @@ const CollaboratorSearch: React.FC<CollaboratorSearchProps> = ({
   getCollaborator,
 }) => {
   const { user } = useSupabaseUser()
-  const [searchResults, setSearchResults] = useState<User[] | []>([
-    // {
-    //   id: "",
-    //   avatarUrl: "https://tobcraft.xyz/imgs/icon.png",
-    //   email: "random one",
-    //   billingAddress: "",
-    //   fullName: "moin moin",
-    //   paymentMethod: "",
-    //   updatedAt: "",
-    // },
-  ])
+  const [searchResults, setSearchResults] = useState<User[] | []>([])
   const timerRef = useRef<ReturnType<typeof setTimeout>>()
 
   useEffect(() => {
@@ -113,7 +103,7 @@ const CollaboratorSearch: React.FC<CollaboratorSearchProps> = ({
               >
                 <div className="flex gap-4 items-center">
                   <Avatar className="w-8 h-8">
-                    <AvatarImage src={user.avatarUrl || ""} />
+                    <AvatarImage src="/avatars/7.png" />
                     <AvatarFallback>CP</AvatarFallback>
                   </Avatar>
                   <div

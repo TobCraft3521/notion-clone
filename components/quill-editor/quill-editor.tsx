@@ -1,9 +1,8 @@
 "use client"
-
 import { useAppState } from "@/lib/providers/state-provider"
 import { File, Folder, workspace } from "@/lib/supabase/supabase.types"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import "react-quill/dist/quill.snow.css" // Import Quill styles
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import "quill/dist/quill.snow.css"
 import { Button } from "../ui/button"
 import {
   deleteFile,
@@ -25,22 +24,19 @@ import {
 } from "../ui/tooltip"
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar"
 import { Badge } from "../ui/badge"
-import { XCircleIcon } from "lucide-react"
 import Image from "next/image"
 import EmojiPicker from "../global/emoji-picker"
-import { createBrowserClient } from "@supabase/ssr"
 import BannerUpload from "../banner-upload/banner-upload"
+import { XCircleIcon } from "lucide-react"
 import { useSocket } from "@/lib/providers/socket-provider"
 import { useSupabaseUser } from "@/lib/providers/supabase-user-provider"
-
-// export const dynamic = "force-dynamic"
+import { createBrowserClient } from "@supabase/ssr"
 
 interface QuillEditorProps {
-  dirType: "workspace" | "folder" | "file"
   dirDetails: File | Folder | workspace
   fileId: string
+  dirType: "workspace" | "folder" | "file"
 }
-
 var TOOLBAR_OPTIONS = [
   ["bold", "italic", "underline", "strike"], // toggled buttons
   ["blockquote", "code-block"],
@@ -61,7 +57,11 @@ var TOOLBAR_OPTIONS = [
   ["clean"], // remove formatting button
 ]
 
-const QuillEditor = ({ fileId, dirDetails, dirType }: QuillEditorProps) => {
+const QuillEditor: React.FC<QuillEditorProps> = ({
+  dirDetails,
+  dirType,
+  fileId,
+}) => {
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -69,31 +69,16 @@ const QuillEditor = ({ fileId, dirDetails, dirType }: QuillEditorProps) => {
   const { state, workspaceId, folderId, dispatch } = useAppState()
   const saveTimerRef = useRef<ReturnType<typeof setTimeout>>()
   const { user } = useSupabaseUser()
-  const [quill, setQuill] = useState<any>(null)
   const router = useRouter()
-  const pathname = usePathname()
-  const [localCursors, setLocalCursors] = useState<any>([])
-  const [collaborators, setCollaborators] = useState<
-    {
-      id: string
-      email: string
-      avatarUrl: string
-    }[]
-  >([
-    {
-      id: "sfs",
-      email: "string",
-      avatarUrl: "",
-    },
-    {
-      id: "string",
-      email: "strinsdsfdg",
-      avatarUrl: "",
-    },
-  ])
-  const [saving, setSaving] = useState(false)
-  const [deletingBanner, setDeletingBanner] = useState(false)
   const { socket, isConnect } = useSocket()
+  const pathname = usePathname()
+  const [quill, setQuill] = useState<any>(null)
+  const [collaborators, setCollaborators] = useState<
+    { id: string; email: string; avatarUrl: string }[]
+  >([])
+  const [deletingBanner, setDeletingBanner] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [localCursors, setLocalCursors] = useState<any>([])
 
   const details = useMemo(() => {
     let selectedDir
@@ -522,23 +507,23 @@ const QuillEditor = ({ fileId, dirDetails, dirType }: QuillEditorProps) => {
         {details.inTrash && (
           <article
             className="py-2 
-        z-40 
-        bg-[#EB5757] 
-        flex  
-        md:flex-row 
-        flex-col 
-        justify-center 
-        items-center 
-        gap-4 
-        flex-wrap"
+          z-40 
+          bg-[#EB5757] 
+          flex  
+          md:flex-row 
+          flex-col 
+          justify-center 
+          items-center 
+          gap-4 
+          flex-wrap"
           >
             <div
               className="flex 
-          flex-col 
-          md:flex-row 
-          gap-2 
-          justify-center 
-          items-center"
+            flex-col 
+            md:flex-row 
+            gap-2 
+            justify-center 
+            items-center"
             >
               <span className="text-white">
                 This {dirType} is in the trash.
@@ -547,11 +532,11 @@ const QuillEditor = ({ fileId, dirDetails, dirType }: QuillEditorProps) => {
                 size="sm"
                 variant="outline"
                 className="bg-transparent
-              border-white
-              text-white
-              hover:bg-white
-              hover:text-[#EB5757]
-              "
+                border-white
+                text-white
+                hover:bg-white
+                hover:text-[#EB5757]
+                "
                 onClick={restoreFileHandler}
               >
                 Restore
@@ -561,11 +546,11 @@ const QuillEditor = ({ fileId, dirDetails, dirType }: QuillEditorProps) => {
                 size="sm"
                 variant="outline"
                 className="bg-transparent
-              border-white
-              text-white
-              hover:bg-white
-              hover:text-[#EB5757]
-              "
+                border-white
+                text-white
+                hover:bg-white
+                hover:text-[#EB5757]
+                "
                 onClick={deleteFileHandler}
               >
                 Delete
@@ -576,13 +561,13 @@ const QuillEditor = ({ fileId, dirDetails, dirType }: QuillEditorProps) => {
         )}
         <div
           className="flex 
-      flex-col-reverse 
-      sm:flex-row 
-      sm:justify-between 
-      justify-center 
-      sm:items-center 
-      sm:p-2 
-      p-8"
+        flex-col-reverse 
+        sm:flex-row 
+        sm:justify-between 
+        justify-center 
+        sm:items-center 
+        sm:p-2 
+        p-8"
         >
           <div>{breadCrumbs}</div>
           <div className="flex items-center gap-4">
@@ -593,17 +578,17 @@ const QuillEditor = ({ fileId, dirDetails, dirType }: QuillEditorProps) => {
                     <TooltipTrigger asChild>
                       <Avatar
                         className="
-                  -ml-3 
-                  bg-background 
-                  border-2 
-                  flex 
-                  items-center 
-                  justify-center 
-                  border-white 
-                  h-8 
-                  w-8 
-                  rounded-full
-                  "
+                    -ml-3 
+                    bg-background 
+                    border-2 
+                    flex 
+                    items-center 
+                    justify-center 
+                    border-white 
+                    h-8 
+                    w-8 
+                    rounded-full
+                    "
                       >
                         <AvatarImage
                           src={
@@ -625,10 +610,10 @@ const QuillEditor = ({ fileId, dirDetails, dirType }: QuillEditorProps) => {
               <Badge
                 variant="secondary"
                 className="bg-orange-600 top-4
-              text-white
-              right-4
-              z-50
-              "
+                text-white
+                right-4
+                z-50
+                "
               >
                 Saving...
               </Badge>
@@ -636,11 +621,11 @@ const QuillEditor = ({ fileId, dirDetails, dirType }: QuillEditorProps) => {
               <Badge
                 variant="secondary"
                 className="bg-emerald-600 
-              top-4
-            text-white
-            right-4
-            z-50
-            "
+                top-4
+              text-white
+              right-4
+              z-50
+              "
               >
                 Saved
               </Badge>
@@ -658,42 +643,42 @@ const QuillEditor = ({ fileId, dirDetails, dirType }: QuillEditorProps) => {
             }
             fill
             className="w-full md:h-48
-          h-20
-          object-cover"
+            h-20
+            object-cover"
             alt="Banner Image"
           />
         </div>
       )}
       <div
         className="flex 
-      justify-center
-      items-center
-      flex-col
-      mt-2
-      relative
-    "
+        justify-center
+        items-center
+        flex-col
+        mt-2
+        relative
+      "
       >
         <div
           className="w-full 
-      self-center 
-      max-w-[800px] 
-      flex 
-      flex-col
-       px-7 
-       lg:my-8"
+        self-center 
+        max-w-[800px] 
+        flex 
+        flex-col
+         px-7 
+         lg:my-8"
         >
           <div className="text-[80px]">
             <EmojiPicker getValue={iconOnChange}>
               <div
                 className="w-[100px]
-              cursor-pointer
-              transition-colors
-              h-[100px]
-              flex
-              items-center
-              justify-center
-              hover:bg-muted
-              rounded-xl"
+                cursor-pointer
+                transition-colors
+                h-[100px]
+                flex
+                items-center
+                justify-center
+                hover:bg-muted
+                rounded-xl"
               >
                 {details.iconId}
               </div>
@@ -704,12 +689,12 @@ const QuillEditor = ({ fileId, dirDetails, dirType }: QuillEditorProps) => {
               id={fileId}
               dirType={dirType}
               className="mt-2
-            text-sm
-            text-muted-foreground
-            p-2
-            hover:text-card-foreground
-            transition-all
-            rounded-md"
+              text-sm
+              text-muted-foreground
+              p-2
+              hover:text-card-foreground
+              transition-all
+              rounded-md"
             >
               {details.bannerUrl ? "Update Banner" : "Add Banner"}
             </BannerUpload>
@@ -719,15 +704,15 @@ const QuillEditor = ({ fileId, dirDetails, dirType }: QuillEditorProps) => {
                 onClick={deleteBanner}
                 variant="ghost"
                 className="gap-2 hover:bg-background
-              flex
-              item-center
-              justify-center
-              mt-2
-              text-sm
-              text-muted-foreground
-              w-36
-              p-2
-              rounded-md"
+                flex
+                item-center
+                justify-center
+                mt-2
+                text-sm
+                text-muted-foreground
+                w-36
+                p-2
+                rounded-md"
               >
                 <XCircleIcon size={16} />
                 <span className="whitespace-nowrap font-normal">
@@ -738,11 +723,11 @@ const QuillEditor = ({ fileId, dirDetails, dirType }: QuillEditorProps) => {
           </div>
           <span
             className="
-          text-muted-foreground
-          text-3xl
-          font-bold
-          h-9
-        "
+            text-muted-foreground
+            text-3xl
+            font-bold
+            h-9
+          "
           >
             {details.title}
           </span>

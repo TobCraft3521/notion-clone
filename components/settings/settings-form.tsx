@@ -52,16 +52,14 @@ import { ScrollArea } from "../ui/scroll-area"
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar"
 import { Alert, AlertDescription } from "../ui/alert"
 import CypressProfileIcon from "../icons/cypressProfileIcon"
-// import LogoutButton from "../global/logout-button"
+import LogoutButton from "../global/logout-button"
 import Link from "next/link"
 import { createBrowserClient } from "@supabase/ssr"
-// import { useSubscriptionModal } from "@/lib/providers/subscription-modal-provider"
-// import { postData } from "@/lib/utils"
 
 const SettingsForm = () => {
   const { toast } = useToast()
   const { user, subscription } = useSupabaseUser()
-  //const { open, setOpen } = useSubscriptionModal()
+  //const { open, setOpen } = useSubscriptionModal();
   const router = useRouter()
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -79,30 +77,29 @@ const SettingsForm = () => {
 
   //WIP PAYMENT PORTAL
 
-  //   const redirectToCustomerPortal = async () => {
-  //     setLoadingPortal(true)
-  //     try {
-  //       const { url, error } = await postData({
-  //         url: "/api/create-portal-link",
-  //       })
-  //       window.location.assign(url)
-  //     } catch (error) {
-  //       console.log(error)
-  //       setLoadingPortal(false)
-  //     }
-  //     setLoadingPortal(false)
+  // const redirectToCustomerPortal = async () => {
+  //   setLoadingPortal(true);
+  //   try {
+  //     const { url, error } = await postData({
+  //       url: '/api/create-portal-link',
+  //     });
+  //     window.location.assign(url);
+  //   } catch (error) {
+  //     console.log(error);
+  //     setLoadingPortal(false);
   //   }
-
+  //   setLoadingPortal(false);
+  // };
   //addcollborators
-  // const addCollaborator = async (profile: User) => {
-  //   if (!workspaceId) return
-  //   if (subscription?.status !== "active" && collaborators.length >= 2) {
-  //     setOpen(true)
-  //     return
-  //   }
-  //   await addCollaborators([profile], workspaceId)
-  //   setCollaborators([...collaborators, profile])
-  // }
+  const addCollaborator = async (profile: User) => {
+    if (!workspaceId) return
+    // if (subscription?.status !== "active" && collaborators.length >= 2) {
+    //   setOpen(true)
+    //   return
+    // }
+    await addCollaborators([profile], workspaceId)
+    setCollaborators([...collaborators, profile])
+  }
 
   //remove collaborators
   const removeCollaborator = async (user: User) => {
@@ -277,7 +274,7 @@ const SettingsForm = () => {
             <CollaboratorSearch
               existingCollaborators={collaborators}
               getCollaborator={(user) => {
-                // addCollaborators(user)
+                addCollaborator(user)
               }}
             >
               <Button type="button" className="text-sm mt-4">
@@ -404,16 +401,16 @@ const SettingsForm = () => {
               type="file"
               accept="image/*"
               placeholder="Profile Picture"
-              //   onChange={onChangeProfilePicture}
+              // onChange={onChangeProfilePicture}
               disabled={uploadingProfilePic}
             />
           </div>
         </div>
-        {/* <LogoutButton>
+        <LogoutButton>
           <div className="flex items-center">
             <LogOut />
           </div>
-        </LogoutButton> */}
+        </LogoutButton>
         <p className="flex items-center gap-2 mt-6">
           <CreditCard size={20} /> Billing & Plan
         </p>
@@ -429,7 +426,7 @@ const SettingsForm = () => {
         >
           View Plans <ExternalLink size={16} />
         </Link>
-        {subscription?.status === "active" ? (
+        {/* {subscription?.status === "active" ? (
           <div>
             <Button
               type="button"
@@ -437,7 +434,7 @@ const SettingsForm = () => {
               variant={"secondary"}
               disabled={loadingPortal}
               className="text-sm"
-              //onClick={redirectToCustomerPortal}
+              onClick={redirectToCustomerPortal}
             >
               Manage Subscription
             </Button>
@@ -449,12 +446,12 @@ const SettingsForm = () => {
               size="sm"
               variant={"secondary"}
               className="text-sm"
-              //  onClick={() => setOpen(true)}
+              onClick={() => setOpen(true)}
             >
               Start Plan
             </Button>
           </div>
-        )}
+        )} */}
       </>
       <AlertDialog open={openAlertMessage}>
         <AlertDialogContent>
