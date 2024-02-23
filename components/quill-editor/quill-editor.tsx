@@ -8,6 +8,7 @@ import { Button } from "../ui/button"
 import {
   deleteFile,
   deleteFolder,
+  findUser,
   getFileDetails,
   getFolderDetails,
   getWorkspaceDetails,
@@ -71,6 +72,7 @@ const QuillEditor = ({ fileId, dirDetails, dirType }: QuillEditorProps) => {
   const [quill, setQuill] = useState<any>(null)
   const router = useRouter()
   const pathname = usePathname()
+  const [localCursors, setLocalCursors] = useState<any>([])
   const [collaborators, setCollaborators] = useState<
     {
       id: string
@@ -112,7 +114,9 @@ const QuillEditor = ({ fileId, dirDetails, dirType }: QuillEditorProps) => {
       )
     }
 
-    if (selectedDir) return selectedDir
+    if (selectedDir) {
+      return selectedDir
+    }
 
     return {
       title: dirDetails.title,
@@ -121,20 +125,76 @@ const QuillEditor = ({ fileId, dirDetails, dirType }: QuillEditorProps) => {
       data: dirDetails.data,
       inTrash: dirDetails.inTrash,
       bannerUrl: dirDetails.bannerUrl,
-    } as File | Folder | workspace
+    } as workspace | Folder | File
   }, [state, workspaceId, folderId])
+
+  const breadCrumbs = useMemo(() => {
+    if (!pathname || !state.workspaces || !workspaceId) return
+    const segments = pathname
+      .split("/")
+      .filter((val) => val !== "dashboard" && val)
+    const workspaceDetails = state.workspaces.find(
+      (workspace) => workspace.id === workspaceId
+    )
+    const workspaceBreadCrumb = workspaceDetails
+      ? `${workspaceDetails.iconId} ${workspaceDetails.title}`
+      : ""
+    if (segments.length === 1) {
+      return workspaceBreadCrumb
+    }
+
+    const folderSegment = segments[1]
+    const folderDetails = workspaceDetails?.folders.find(
+      (folder) => folder.id === folderSegment
+    )
+    const folderBreadCrumb = folderDetails
+      ? `/ ${folderDetails.iconId} ${folderDetails.title}`
+      : ""
+
+    if (segments.length === 2) {
+      return `${workspaceBreadCrumb} ${folderBreadCrumb}`
+    }
+
+    const fileSegment = segments[2]
+    const fileDetails = folderDetails?.files.find(
+      (file) => file.id === fileSegment
+    )
+    const fileBreadCrumb = fileDetails
+      ? `/ ${fileDetails.iconId} ${fileDetails.title}`
+      : ""
+
+    return `${workspaceBreadCrumb} ${folderBreadCrumb} ${fileBreadCrumb}`
+  }, [state, pathname, workspaceId])
+
+  //
+  const wrapperRef = useCallback(async (wrapper: any) => {
+    if (typeof window !== "undefined") {
+      if (wrapper === null) return
+      wrapper.innerHTML = ""
+      const editor = document.createElement("div")
+      wrapper.append(editor)
+      const Quill = (await import("quill")).default
+      const QuillCursors = (await import("quill-cursors")).default
+      Quill.register("modules/cursors", QuillCursors)
+      const q = new Quill(editor, {
+        theme: "snow",
+        modules: {
+          toolbar: TOOLBAR_OPTIONS,
+          cursors: {
+            transformOnTextChange: true,
+          },
+        },
+      })
+      setQuill(q)
+    }
+  }, [])
 
   const restoreFileHandler = async () => {
     if (dirType === "file") {
       if (!folderId || !workspaceId) return
       dispatch({
         type: "UPDATE_FILE",
-        payload: {
-          folderId,
-          fileId,
-          file: { inTrash: "" },
-          workspaceId,
-        },
+        payload: { file: { inTrash: "" }, fileId, folderId, workspaceId },
       })
       await updateFile({ inTrash: "" }, fileId)
     }
@@ -142,13 +202,9 @@ const QuillEditor = ({ fileId, dirDetails, dirType }: QuillEditorProps) => {
       if (!workspaceId) return
       dispatch({
         type: "UPDATE_FOLDER",
-        payload: {
-          folderId: fileId,
-          folder: { inTrash: "" },
-          workspaceId,
-        },
+        payload: { folder: { inTrash: "" }, folderId: fileId, workspaceId },
       })
-      await updateFile({ inTrash: "" }, fileId)
+      await updateFolder({ inTrash: "" }, fileId)
     }
   }
 
@@ -306,7 +362,26 @@ const QuillEditor = ({ fileId, dirDetails, dirType }: QuillEditorProps) => {
       }
     }
     fetchInformation()
-  }, [fileId, workspaceId, folderId])
+  }, [fileId, workspaceId, quill, dirType])
+
+  useEffect(() => {
+    if (quill === null || socket === null || !fileId || !localCursors.length)
+      return
+    const socketHandler = (range: any, roomId: string, cursorId: string) => {
+      if (roomId === fileId) {
+        const cursorToMove = localCursors.find(
+          (c: any) => c.cursors()?.[0].id === cursorId
+        )
+        if (cursorToMove) {
+          cursorToMove.moveCursor(cursorId, range)
+        }
+      }
+    }
+    socket.on("receive-cursor-move", socketHandler)
+    return () => {
+      socket.off("receive-cursor-move", socketHandler)
+    }
+  }, [quill, socket, fileId, localCursors])
 
   //rooms
   useEffect(() => {
@@ -333,40 +408,40 @@ const QuillEditor = ({ fileId, dirDetails, dirType }: QuillEditorProps) => {
       const quillLength = quill.getLength()
       saveTimerRef.current = setTimeout(async () => {
         if (contents && quillLength !== 1 && fileId) {
-          if (dirType == "workspace") {
+          if (dirType == 'workspace') {
             dispatch({
-              type: "UPDATE_WORKSPACE",
+              type: 'UPDATE_WORKSPACE',
               payload: {
                 workspace: { data: JSON.stringify(contents) },
                 workspaceId: fileId,
               },
-            })
-            await updateWorkspace({ data: JSON.stringify(contents) }, fileId)
+            });
+            await updateWorkspace({ data: JSON.stringify(contents) }, fileId);
           }
-          if (dirType == "folder") {
-            if (!workspaceId) return
+          if (dirType == 'folder') {
+            if (!workspaceId) return;
             dispatch({
-              type: "UPDATE_FOLDER",
+              type: 'UPDATE_FOLDER',
               payload: {
                 folder: { data: JSON.stringify(contents) },
                 workspaceId,
                 folderId: fileId,
               },
-            })
-            await updateFolder({ data: JSON.stringify(contents) }, fileId)
+            });
+            await updateFolder({ data: JSON.stringify(contents) }, fileId);
           }
-          if (dirType == "file") {
-            if (!workspaceId || !folderId) return
+          if (dirType == 'file') {
+            if (!workspaceId || !folderId) return;
             dispatch({
-              type: "UPDATE_FILE",
+              type: 'UPDATE_FILE',
               payload: {
                 file: { data: JSON.stringify(contents) },
                 workspaceId,
                 folderId: folderId,
                 fileId,
               },
-            })
-            await updateFile({ data: JSON.stringify(contents) }, fileId)
+            });
+            await updateFile({ data: JSON.stringify(contents) }, fileId);
           }
         }
         setSaving(false)
@@ -383,65 +458,63 @@ const QuillEditor = ({ fileId, dirDetails, dirType }: QuillEditorProps) => {
     }
   }, [quill, socket, fileId, user, details, folderId, workspaceId, dispatch])
 
-  const breadCrumbs = useMemo(() => {
-    if (!pathname || !state.workspaces || !workspaceId) return
-    const segments = pathname
-      .split("/")
-      .filter((val) => val !== "dashboard" && val)
-    const workspaceDetails = state.workspaces.find(
-      (workspace) => workspace.id === workspaceId
-    )
-    const workspaceBreadCrumb = workspaceDetails
-      ? `${workspaceDetails.iconId} ${workspaceDetails.title}`
-      : ""
-    if (segments.length === 1) {
-      return workspaceBreadCrumb
+  useEffect(() => {
+    if (quill === null || socket === null) return
+    const socketHandler = (deltas: any, id: string) => {
+      if (id === fileId) {
+        quill.updateContents(deltas)
+      }
     }
-
-    const folderSegment = segments[1]
-    const folderDetails = workspaceDetails?.folders.find(
-      (folder) => folder.id === folderSegment
-    )
-    const folderBreadCrumb = folderDetails
-      ? `/ ${folderDetails.iconId} ${folderDetails.title}`
-      : ""
-
-    if (segments.length === 2) {
-      return `${workspaceBreadCrumb} ${folderBreadCrumb}`
+    socket.on("receive-changes", socketHandler)
+    return () => {
+      socket.off("receive-changes", socketHandler)
     }
+  }, [quill, socket, fileId])
 
-    const fileSegment = segments[2]
-    const fileDetails = folderDetails?.files.find(
-      (file) => file.id === fileSegment
-    )
-    const fileBreadCrumb = fileDetails
-      ? `/ ${fileDetails.iconId} ${fileDetails.title}`
-      : ""
-
-    return `${workspaceBreadCrumb} ${folderBreadCrumb} ${fileBreadCrumb}`
-  }, [state, pathname, workspaceId])
-
-  const wrapperRef = useCallback(async (wrapper: any) => {
-    if (typeof window !== "undefined") {
-      if (wrapper === null) return
-      wrapper.innerHTML = ""
-      const editor = document.createElement("div")
-      wrapper.append(editor)
-      const Quill = (await import("quill")).default
-      // const QuillCursors = (await import("quill-cursors")).default
-      // Quill.register("modules/cursors", QuillCursors)
-      const q = new Quill(editor, {
-        theme: "snow",
-        modules: {
-          toolbar: TOOLBAR_OPTIONS,
-          // cursors: {
-          //   transformOnTextChange: true,
-          // },
-        },
+  useEffect(() => {
+    if (!fileId || quill === null) return
+    const room = supabase.channel(fileId)
+    const subscription = room
+      .on("presence", { event: "sync" }, () => {
+        const newState = room.presenceState()
+        const newCollaborators = Object.values(newState).flat() as any
+        setCollaborators(newCollaborators)
+        if (user) {
+          const allCursors: any = []
+          newCollaborators.forEach(
+            (collaborator: { id: string; email: string; avatar: string }) => {
+              if (collaborator.id !== user.id) {
+                const userCursor = quill.getModule("cursors")
+                userCursor.createCursor(
+                  collaborator.id,
+                  collaborator.email.split("@")[0],
+                  `#${Math.random().toString(16).slice(2, 8)}`
+                )
+                allCursors.push(userCursor)
+              }
+            }
+          )
+          setLocalCursors(allCursors)
+        }
       })
-      setQuill(q)
+      .subscribe(async (status) => {
+        if (status !== "SUBSCRIBED" || !user) return
+        const response = await findUser(user.id)
+        if (!response) return
+
+        room.track({
+          id: user.id,
+          email: user.email?.split("@")[0],
+          avatarUrl: response.avatarUrl
+            ? supabase.storage.from("avatars").getPublicUrl(response.avatarUrl)
+                .data.publicUrl
+            : "",
+        })
+      })
+    return () => {
+      supabase.removeChannel(room)
     }
-  }, [])
+  }, [fileId, quill, supabase, user])
 
   return (
     <>
