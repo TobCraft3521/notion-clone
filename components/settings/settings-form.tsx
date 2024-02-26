@@ -1,10 +1,31 @@
 "use client"
-import React, { useEffect, useRef, useState } from "react"
-import { useToast } from "../ui/use-toast"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from "@/components/ui/alert-dialog"
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { useAppState } from "@/lib/providers/state-provider"
-import { User, workspace } from "@/lib/supabase/supabase.types"
 import { useSupabaseUser } from "@/lib/providers/supabase-user-provider"
-import { useRouter } from "next/navigation"
+import {
+  addCollaborators,
+  deleteWorkspace,
+  getCollaborators,
+  removeCollaborators,
+  updateWorkspace,
+} from "@/lib/supabase/queries"
+import { User, workspace } from "@/lib/supabase/supabase.types"
 import {
   Briefcase,
   CreditCard,
@@ -15,46 +36,23 @@ import {
   Share,
   User as UserIcon,
 } from "lucide-react"
-import { Separator } from "../ui/separator"
-import { Label } from "../ui/label"
-import { Input } from "../ui/input"
-import {
-  addCollaborators,
-  deleteWorkspace,
-  getCollaborators,
-  removeCollaborators,
-  updateWorkspace,
-} from "@/lib/supabase/queries"
+import { useRouter } from "next/navigation"
+import React, { useEffect, useRef, useState } from "react"
 import { v4 } from "uuid"
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+import { Input } from "../ui/input"
+import { Label } from "../ui/label"
+import { Separator } from "../ui/separator"
+import { useToast } from "../ui/use-toast"
 
+import { createBrowserClient } from "@supabase/ssr"
+import Link from "next/link"
 import CollaboratorSearch from "../global/collaborator-search"
+import LogoutButton from "../global/logout-button"
+import CypressProfileIcon from "../icons/cypressProfileIcon"
+import { Alert, AlertDescription } from "../ui/alert"
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar"
 import { Button } from "../ui/button"
 import { ScrollArea } from "../ui/scroll-area"
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar"
-import { Alert, AlertDescription } from "../ui/alert"
-import CypressProfileIcon from "../icons/cypressProfileIcon"
-import LogoutButton from "../global/logout-button"
-import Link from "next/link"
-import { createBrowserClient } from "@supabase/ssr"
 
 const SettingsForm = () => {
   const { toast } = useToast()
