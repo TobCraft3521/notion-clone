@@ -418,7 +418,7 @@ const SettingsForm = () => {
           {subscription?.status === "active" ? "Pro" : "Free"} Plan
         </p>
         <Link
-          href="/"
+          href="/#pricing"
           target="_blank"
           className="text-muted-foreground flex flex-row items-center gap-2"
         >
