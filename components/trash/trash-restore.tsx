@@ -67,7 +67,7 @@ const TrashRestore = () => {
             >
               <article>
                 <aside className="flex items-center gap-2">
-                  <FileIcon />
+                  <FolderIcon />
                   {file.title}
                 </aside>
               </article>

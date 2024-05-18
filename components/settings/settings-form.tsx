@@ -6,7 +6,7 @@ import {
   AlertDialogContent,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle
+  AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import {
   Select,
@@ -21,8 +21,10 @@ import { useSupabaseUser } from "@/lib/providers/supabase-user-provider"
 import {
   addCollaborators,
   deleteWorkspace,
+  findUser,
   getCollaborators,
   removeCollaborators,
+  updateUserAvatarUrl,
   updateWorkspace,
 } from "@/lib/supabase/queries"
 import { User, workspace } from "@/lib/supabase/supabase.types"
@@ -44,6 +46,7 @@ import { Label } from "../ui/label"
 import { Separator } from "../ui/separator"
 import { useToast } from "../ui/use-toast"
 
+import { useSubscriptionModal } from "@/lib/providers/subscription-modal-provider"
 import { createBrowserClient } from "@supabase/ssr"
 import Link from "next/link"
 import CollaboratorSearch from "../global/collaborator-search"
@@ -53,11 +56,12 @@ import { Alert, AlertDescription } from "../ui/alert"
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar"
 import { Button } from "../ui/button"
 import { ScrollArea } from "../ui/scroll-area"
+import { postData } from "@/lib/utils"
 
 const SettingsForm = () => {
   const { toast } = useToast()
   const { user, subscription } = useSupabaseUser()
-  //const { open, setOpen } = useSubscriptionModal();
+  const { open, setOpen } = useSubscriptionModal()
   const router = useRouter()
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -72,29 +76,37 @@ const SettingsForm = () => {
   const [uploadingProfilePic, setUploadingProfilePic] = useState(false)
   const [uploadingLogo, setUploadingLogo] = useState(false)
   const [loadingPortal, setLoadingPortal] = useState(false)
+  const [avatarUrl, setAvatarUrl] = useState<string>()
 
-  //WIP PAYMENT PORTAL
+  useEffect(() => {
+    const fetchAvatar = async () => {
+      const usr = await findUser(user?.id!)
+      setAvatarUrl(usr?.avatarUrl!)
+    }
+    fetchAvatar()
+  }, [])
 
-  // const redirectToCustomerPortal = async () => {
-  //   setLoadingPortal(true);
-  //   try {
-  //     const { url, error } = await postData({
-  //       url: '/api/create-portal-link',
-  //     });
-  //     window.location.assign(url);
-  //   } catch (error) {
-  //     console.log(error);
-  //     setLoadingPortal(false);
-  //   }
-  //   setLoadingPortal(false);
-  // };
+  const redirectToCustomerPortal = async () => {
+    setLoadingPortal(true)
+    try {
+      const { url, error } = await postData({
+        url: "/api/create-portal-link",
+      })
+      window.location.assign(url)
+    } catch (error) {
+      console.log(error)
+      setLoadingPortal(false)
+    }
+    setLoadingPortal(false)
+  }
+
   //addcollborators
   const addCollaborator = async (profile: User) => {
     if (!workspaceId) return
-    // if (subscription?.status !== "active" && collaborators.length >= 2) {
-    //   setOpen(true)
-    //   return
-    // }
+    if (!subscription && collaborators.length >= 2) {
+      setOpen(true)
+      return
+    }
     await addCollaborators([profile], workspaceId)
     setCollaborators([...collaborators, profile])
   }
@@ -123,6 +135,30 @@ const SettingsForm = () => {
     titleTimerRef.current = setTimeout(async () => {
       await updateWorkspace({ title: e.target.value }, workspaceId)
     }, 500)
+  }
+
+  const onChangeProfilePicture = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploadingProfilePic(true)
+    const { data, error } = await supabase.storage
+      .from("avatars")
+      .upload(`avatars.${user?.id}`, file, {
+        cacheControl: "3600",
+        upsert: true,
+      })
+
+    if (!error) {
+      const { error } = await updateUserAvatarUrl(
+        await supabase.storage
+          .from("avatars")
+          .getPublicUrl(`avatars.${user?.id}`).data.publicUrl,
+        user?.id!
+      )
+      setUploadingLogo(false)
+    }
   }
 
   const onChangeWorkspaceLogo = async (
@@ -379,7 +415,7 @@ const SettingsForm = () => {
         <Separator />
         <div className="flex items-center">
           <Avatar>
-            <AvatarImage src={""} />
+            <AvatarImage src={avatarUrl} />
             <AvatarFallback>
               <CypressProfileIcon />
             </AvatarFallback>
@@ -399,7 +435,7 @@ const SettingsForm = () => {
               type="file"
               accept="image/*"
               placeholder="Profile Picture"
-              // onChange={onChangeProfilePicture}
+              onChange={onChangeProfilePicture}
               disabled={uploadingProfilePic}
             />
           </div>
@@ -414,8 +450,7 @@ const SettingsForm = () => {
         </p>
         <Separator />
         <p className="text-muted-foreground">
-          You are currently on a{" "}
-          {subscription?.status === "active" ? "Pro" : "Free"} Plan
+          You are currently on a {subscription ? "Pro" : "Free"} Plan
         </p>
         <Link
           href="/#pricing"
@@ -424,7 +459,7 @@ const SettingsForm = () => {
         >
           View Plans <ExternalLink size={16} />
         </Link>
-        {/* {subscription?.status === "active" ? (
+        {subscription ? (
           <div>
             <Button
               type="button"
@@ -449,7 +484,7 @@ const SettingsForm = () => {
               Start Plan
             </Button>
           </div>
-        )} */}
+        )}
       </>
       <AlertDialog open={openAlertMessage}>
         <AlertDialogContent>

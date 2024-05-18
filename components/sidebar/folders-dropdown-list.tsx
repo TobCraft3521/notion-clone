@@ -12,6 +12,7 @@ import { createFolder } from "@/lib/supabase/queries"
 import { useToast } from "../ui/use-toast"
 import Dropdown from "./Dropdown"
 import useSupabaseRealtime from "@/lib/hooks/useSupabaseRealtime"
+import { useSubscriptionModal } from "@/lib/providers/subscription-modal-provider"
 
 interface FoldersDropdownListProps {
   workspaceFolders: Folder[]
@@ -26,6 +27,7 @@ const FoldersDropdownList = ({
   const [folders, setFolders] = useState(workspaceFolders)
   const { subscription } = useSupabaseUser()
   const { toast } = useToast()
+  const { open, setOpen } = useSubscriptionModal()
   useSupabaseRealtime()
 
   useEffect(() => {
@@ -54,9 +56,10 @@ const FoldersDropdownList = ({
   }, [state, workspaceId])
 
   const addFolderHandler = async () => {
-    // if (folders.length >= 3 && !subscription) {
-
-    // }
+    if (folders.length >= 3 && !subscription) {
+      setOpen(true)
+      return
+    }
     const newFolder: Folder = {
       data: null,
       id: v4(),

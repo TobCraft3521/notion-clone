@@ -43,18 +43,16 @@ const PlanUsage = ({ foldersLength, subscription }: PlanUsageProps) => {
           <div
             className="flex 
      justify-between 
-     w-full 
+     w-full
      items-center
      "
           >
-            <div>Free Plan</div>
+            <div>{subscription ? "Pro Plan" : "Free Plan"}</div>
             <small>{usagePercentage.toFixed(0)}% / 100%</small>
           </div>
         </div>
       )}
-      {subscription?.status !== "active" && (
-        <Progress value={usagePercentage} className="h-1" />
-      )}
+      {!subscription && <Progress value={usagePercentage} className="h-1" />}
     </article>
   )
 }

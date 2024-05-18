@@ -35,17 +35,10 @@ const UserCard: React.FC<UserCardProps> = async ({ subscription }) => {
   const response = await db.query.users.findFirst({
     where: (u, { eq }) => eq(u.id, user.id),
   })
-  let avatarPath
-  if (!response) return
-  if (!response.avatarUrl) avatarPath = ""
-  else {
-    avatarPath = supabase.storage
-      .from("avatars")
-      .getPublicUrl(response.avatarUrl)?.data.publicUrl
-  }
+
   const profile = {
     ...response,
-    avatarUrl: avatarPath,
+    avatarUrl: response?.avatarUrl || "",
   }
 
   return (
@@ -69,7 +62,7 @@ const UserCard: React.FC<UserCardProps> = async ({ subscription }) => {
         </Avatar>
         <div className="flex flex-col">
           <span className="text-muted-foreground">
-            {subscription?.status === "active" ? "Pro Plan" : "Free Plan"}
+            {subscription ? "Pro Plan" : "Free Plan"}
           </span>
           <small
             className="w-[100px] 

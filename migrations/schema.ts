@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm"
+import { relations, sql } from "drizzle-orm"
 import {
   pgTable,
   pgEnum,
@@ -211,3 +211,14 @@ export const collaborators = pgTable("collaborators", {
     .references(() => users.id, { onDelete: "cascade" }),
   id: uuid("id").defaultRandom().primaryKey().notNull(),
 })
+
+export const productsRelations = relations(products, ({ many }) => ({
+  prices: many(prices),
+}))
+
+export const pricesRelations = relations(prices, ({ one }) => ({
+  product: one(products, {
+    fields: [prices.productId],
+    references: [products.id],
+  }),
+}))

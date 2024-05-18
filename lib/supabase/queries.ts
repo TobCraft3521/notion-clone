@@ -1,11 +1,10 @@
 "use server"
+import { and, eq, ilike, notExists } from "drizzle-orm"
 import { validate } from "uuid"
 import { files, folders, users, workspaces } from "../../migrations/schema"
 import db from "./db"
-import { File, Folder, Subscription, User, workspace } from "./supabase.types"
-import { and, eq, ilike, notExists } from "drizzle-orm"
 import { collaborators } from "./schema"
-import { revalidatePath } from "next/cache"
+import { File, Folder, Subscription, User, workspace } from "./supabase.types"
 
 export const createWorkspace = async (workspace: workspace) => {
   try {
@@ -251,24 +250,24 @@ export const findUser = async (userId: string) => {
   return response
 }
 
-// export const getActiveProductsWithPrice = async () => {
-//   try {
-//     const res = await db.query.products.findMany({
-//       where: (pro, { eq }) => eq(pro.active, true),
+export const getActiveProductsWithPrice = async () => {
+  try {
+    const res = await db.query.products.findMany({
+      where: (pro, { eq }) => eq(pro.active, true),
 
-//       with: {
-//         prices: {
-//           where: (pri, { eq }) => eq(pri.active, true),
-//         },
-//       },
-//     })
-//     if (res.length) return { data: res, error: null }
-//     return { data: [], error: null }
-//   } catch (error) {
-//     console.log(error)
-//     return { data: [], error }
-//   }
-// }
+      with: {
+        prices: {
+          where: (pri, { eq }) => eq(pri.active, true),
+        },
+      },
+    })
+    if (res.length) return { data: res, error: null }
+    return { data: [], error: null }
+  } catch (error) {
+    console.log(error)
+    return { data: [], error }
+  }
+}
 
 export const createFolder = async (folder: Folder) => {
   try {
@@ -353,9 +352,25 @@ export const getCollaborators = async (workspaceId: string) => {
 
 export const getUsersFromSearch = async (email: string) => {
   if (!email) return []
-  const accounts = db
+  const accounts = await db
     .select()
     .from(users)
     .where(ilike(users.email, `${email}%`))
   return accounts
+}
+
+export const updateUserAvatarUrl = async (
+  avatarUrl: string,
+  userId: string
+) => {
+  try {
+    await db
+      .update(users)
+      .set({ avatarUrl })
+      .where(eq(users.id, userId || ""))
+    return { data: null, error: null }
+  } catch (error) {
+    console.log(error)
+    return { data: null, error: "Error" }
+  }
 }
